@@ -115,18 +115,26 @@ export default function AddService() {
     if (!validateStep(3)) return;
 
     setIsSubmitting(true);
+    
+    // Safety timeout to prevent button from getting stuck
+    const submitTimeout = setTimeout(() => {
+      setIsSubmitting(false);
+      setErrors({ submit: 'Request timed out. Please try again.' });
+    }, 30000); // 30 second timeout
+
     try {
       let documentUrl = null;
 
       // Upload file to Cloud Storage if provided
       if (uploadedFile && user?.uid) {
+        console.log('[AddService] Starting file upload...');
         const storage = getStorage();
         const fileName = `${user.uid}_${Date.now()}_${uploadedFile.name}`;
         const fileRef = ref(storage, `service-documents/${fileName}`);
         
         const snapshot = await uploadBytes(fileRef, uploadedFile);
         documentUrl = await getDownloadURL(snapshot.ref);
-        console.log('✅ File uploaded to Cloud Storage:', documentUrl);
+        console.log('[AddService] ✅ File uploaded to Cloud Storage:', documentUrl);
       }
 
       // Add service data with document URL
@@ -135,7 +143,12 @@ export default function AddService() {
         documentUrl
       };
 
+      console.log('[AddService] Adding service to Firestore...');
       await addService(serviceDataWithDoc);
+      console.log('[AddService] ✅ Service added successfully');
+      
+      // Clear timeout since operation completed
+      clearTimeout(submitTimeout);
       
       // Show success screen
       setIsSuccess(true);
@@ -145,7 +158,8 @@ export default function AddService() {
         navigate('/provider-dashboard');
       }, 2000);
     } catch (err) {
-      console.error('Error submitting service:', err);
+      console.error('[AddService] Error submitting service:', err);
+      clearTimeout(submitTimeout);
       setErrors({ submit: err.message || 'Failed to add service. Please try again.' });
     } finally {
       setIsSubmitting(false);
