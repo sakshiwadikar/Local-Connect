@@ -33,10 +33,22 @@ export default function SignUp() {
 
     setLoading(true);
     try {
+      console.log('[SignUp] Attempting to sign up as:', userType);
       await signup(formData.email, formData.password, formData.name, userType);
+      console.log('[SignUp] Sign up successful, navigating to home');
       navigate('/');
     } catch (err) {
-      setErrors({ submit: err.message });
+      console.error('[SignUp] Sign up error:', err.message, err.code);
+      // Provide user-friendly error messages
+      let errorMessage = err.message;
+      if (err.code === 'auth/email-already-in-use') {
+        errorMessage = 'This email is already registered. Please sign in or use a different email.';
+      } else if (err.code === 'auth/weak-password') {
+        errorMessage = 'Password is too weak. Please use at least 6 characters.';
+      } else if (err.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address. Please check and try again.';
+      }
+      setErrors({ submit: errorMessage });
     } finally {
       setLoading(false);
     }
@@ -45,12 +57,22 @@ export default function SignUp() {
   const handleGoogleSignUp = async () => {
     setGoogleLoading(true);
     try {
-      await signInWithPopup(auth, googleProvider);
+      console.log('[SignUp] Starting Google sign-up as:', userType);
+      const result = await signInWithPopup(auth, googleProvider);
+      console.log('[SignUp] Google sign-in successful, setting role:', userType);
       // Set the user role based on selected userType
       await setUserRole(userType);
+      console.log('[SignUp] Role set successfully, navigating to home');
       navigate('/');
     } catch (err) {
-      setErrors({ submit: err.message || 'Google sign-up failed' });
+      console.error('[SignUp] Google sign-up error:', err.message, err.code);
+      let errorMessage = err.message || 'Google sign-up failed';
+      if (err.code === 'auth/popup-closed-by-user') {
+        errorMessage = 'Sign-up was cancelled. Please try again.';
+      } else if (err.code === 'auth/account-exists-with-different-credential') {
+        errorMessage = 'An account already exists with this email. Please sign in instead.';
+      }
+      setErrors({ submit: errorMessage });
     } finally {
       setGoogleLoading(false);
     }

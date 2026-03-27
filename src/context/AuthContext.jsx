@@ -97,29 +97,22 @@ export function AuthProvider({ children }) {
         displayName,
         userType,
         createdAt: new Date().toISOString(),
+        photoURL: result.user.photoURL,
         isFavoritelisted: false,
         reviews: [],
-        trustScore: userType === 'provider' ? 0 : null
+        favorites: [],
+        trustScore: userType === 'provider' ? 0 : null,
+        verified: false
       };
       
       // Save to localStorage
       localStorage.setItem(`user_${result.user.uid}`, JSON.stringify(userData));
-      console.log('[AuthContext] Saved to localStorage');
+      console.log('[AuthContext] Saved to localStorage with userType:', userType);
       
       // Save to Firestore (persistent storage)
-      console.log('[AuthContext] Saving to Firestore with UID:', result.user.uid);
-      await setDoc(doc(db, 'users', result.user.uid), {
-        uid: result.user.uid,
-        email,
-        displayName,
-        userType,
-        createdAt: new Date().toISOString(),
-        photoURL: result.user.photoURL,
-        trustScore: userType === 'provider' ? 0 : null,
-        verified: false,
-        favorites: []
-      });
-      console.log('[AuthContext] Successfully created user document in Firestore');
+      console.log('[AuthContext] Saving to Firestore with UID:', result.user.uid, 'userType:', userType);
+      await setDoc(doc(db, 'users', result.user.uid), userData);
+      console.log('[AuthContext] Successfully created user document in Firestore with userType:', userType);
       
       return result.user;
     } catch (err) {
@@ -231,6 +224,8 @@ export function AuthProvider({ children }) {
   const setUserRole = async (userType) => {
     if (!user) return;
     
+    console.log('[AuthContext] Setting user role:', userType, 'for UID:', user.uid);
+    
     const userData = {
       uid: user.uid,
       email: user.email,
@@ -241,15 +236,18 @@ export function AuthProvider({ children }) {
       isFavoritelisted: false,
       reviews: [],
       favorites: [],
-      trustScore: userType === 'provider' ? 0 : null
+      trustScore: userType === 'provider' ? 0 : null,
+      verified: false
     };
     
     // Save to localStorage
     localStorage.setItem(`user_${user.uid}`, JSON.stringify(userData));
+    console.log('[AuthContext] Saved role to localStorage with userType:', userType);
     
-    // Save to Firestore
+    // Save to Firestore - use setDoc without merge to ensure userType is set
     try {
-      await setDoc(doc(db, 'users', user.uid), userData);
+      await setDoc(doc(db, 'users', user.uid), userData, { merge: false });
+      console.log('[AuthContext] Saved role to Firestore with userType:', userType);
     } catch (err) {
       console.error('Error setting user role:', err);
       throw err;
