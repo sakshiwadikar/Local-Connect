@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from model import (
+from model_simple import (
     get_demand_trends,
     get_category_popularity,
     get_area_demand,
