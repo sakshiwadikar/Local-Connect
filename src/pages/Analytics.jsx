@@ -9,7 +9,7 @@ import {
   Zap, TrendingUp, DollarSign, Brain, BarChart3
 } from 'lucide-react';
 
-const API_BASE = 'http://127.0.0.1:5000/api';
+const API_BASE = 'https://local-connect-54ey.onrender.com/api';
 
 const REGIONS = [
   'All India',
