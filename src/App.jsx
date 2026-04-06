@@ -16,13 +16,15 @@ import ProviderSettings from './pages/ProviderSettings';
 import NotFound from './pages/NotFound';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
+import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
     <Router>
-      <AuthProvider>
-        <ToastProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <ToastProvider>
           <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-50">
             <ToastContainer />
           <Navbar />
@@ -68,8 +70,9 @@ function App() {
             </Routes>
           </main>
         </div>
-      </ToastProvider>
-      </AuthProvider>
+          </ToastProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </Router>
   );
 }

@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import EmptyState from '../components/EmptyState';
 
-const mockServices = generateMockServices(100);
+const mockServices = generateMockServices(180);
 
 export default function ServiceListing() {
   const navigate = useNavigate();
@@ -22,7 +22,11 @@ export default function ServiceListing() {
     'electricians': 'Electricians',
     'hospitals': 'Hospitals',
     'grocery': 'Grocery',
-    'courier': 'Courier'
+    'courier': 'Courier',
+    'cooks': 'Cooks & Catering',
+    'pestcontrol': 'Pest Control',
+    'cleaning': 'Cleaning Services',
+    'carpenters': 'Carpenters',
   };
   
   const paramCategory = searchParams.get('category');
@@ -120,7 +124,7 @@ export default function ServiceListing() {
             <div>
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 block">Category</label>
               <div className="space-y-2">
-                {['All', 'Plumbers', 'Electricians', 'Hospitals', 'Brokers', 'Grocery'].map(cat => (
+                {['All', 'Plumbers', 'Electricians', 'Hospitals', 'Grocery', 'Courier', 'Cooks & Catering', 'Pest Control', 'Cleaning Services', 'Carpenters'].map(cat => (
                   <label key={cat} className="flex items-center space-x-2 cursor-pointer group">
                     <input 
                       type="radio" 
@@ -261,10 +265,16 @@ export default function ServiceListing() {
                       >
                         <Heart size={16} className={isFavorited(service.id) ? 'fill-current' : ''} />
                       </button>
-                      <button className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 dark:hover:text-indigo-400 transition-colors tooltip-trigger relative">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); if (!user) { navigate('/signin'); return; } navigate(`/services/${service.id}`); }}
+                        className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 dark:hover:text-indigo-400 transition-colors"
+                      >
                         <Phone size={16} />
                       </button>
-                      <button className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg shadow-md shadow-indigo-600/20 transition-all">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); if (!user) { navigate('/signin'); return; } navigate(`/services/${service.id}`); }}
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg shadow-md shadow-indigo-600/20 transition-all"
+                      >
                         View Match
                       </button>
                     </div>

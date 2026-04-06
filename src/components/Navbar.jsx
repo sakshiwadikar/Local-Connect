@@ -1,13 +1,15 @@
 import { Link, useLocation } from 'react-router-dom';
-import { MapPin, BarChart3, PlusCircle, Search, Home, Menu, X, LogOut, User, Settings, LayoutDashboard } from 'lucide-react';
+import { MapPin, BarChart3, PlusCircle, Search, Home, Menu, X, LogOut, User, Settings, LayoutDashboard, Sun, Moon } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const { user, logout, getUserProfileSync } = useAuth();
+  const { theme, toggle } = useTheme();
   const location = useLocation();
   const profile = user ? getUserProfileSync() : null;
 
@@ -67,7 +69,14 @@ export default function Navbar() {
               })}
             </div>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={toggle}
+                aria-label="Toggle theme"
+                className="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+              </button>
               {user ? (
                 <div className="relative">
                   <button

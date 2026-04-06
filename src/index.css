@@ -1,22 +1,21 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
 @layer base {
   html {
     scroll-behavior: smooth;
   }
-  
+
   body {
-    /* Using standard tailwind slate values for base text and bg */
     background-color: var(--color-slate-50);
     color: var(--color-slate-900);
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
-  @media (prefers-color-scheme: dark) {
-    body {
-      background-color: var(--color-slate-950);
-      color: var(--color-slate-50);
-    }
+  html.dark body {
+    background-color: var(--color-slate-950);
+    color: var(--color-slate-50);
   }
 }
 

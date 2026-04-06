@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, User, AlertCircle, Loader, Briefcase, Users } from 'lucide-react';
+import { Mail, Lock, User, AlertCircle, Loader, Briefcase, Users, Phone, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { auth, googleProvider } from '../lib/firebase';
 import { signInWithPopup } from 'firebase/auth';
@@ -10,7 +10,9 @@ export default function SignUp() {
   const navigate = useNavigate();
   const { signup, setUserRole, error: authError } = useAuth();
   const [userType, setUserType] = useState('customer'); // customer or provider
-  const [formData, setFormData] = useState({ email: '', password: '', confirmPassword: '', name: '' });
+  const [formData, setFormData] = useState({ email: '', password: '', confirmPassword: '', name: '', phone: '' });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -23,6 +25,8 @@ export default function SignUp() {
     if (!formData.password) newErrors.password = 'Password is required';
     if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
     if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+    if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
+    else if (!/^[6-9]\d{9}$/.test(formData.phone.trim())) newErrors.phone = 'Enter a valid 10-digit Indian mobile number';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -34,7 +38,7 @@ export default function SignUp() {
     setLoading(true);
     try {
       console.log('[SignUp] Attempting to sign up as:', userType);
-      await signup(formData.email, formData.password, formData.name, userType);
+      await signup(formData.email, formData.password, formData.name, userType, formData.phone);
       console.log('[SignUp] Sign up successful, navigating to home');
       navigate('/');
     } catch (err) {
@@ -166,18 +170,38 @@ export default function SignUp() {
             </div>
 
             <div className="space-y-1">
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Phone Number</label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                  className={`w-full pl-10 pr-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-950 border transition-all ${
+                    errors.phone ? 'border-red-500 focus:ring-red-500' : 'border-slate-200 dark:border-slate-800 focus:ring-indigo-500'
+                  } focus:outline-none focus:ring-2 text-slate-900 dark:text-white`}
+                  placeholder="10-digit mobile number"
+                />
+              </div>
+              {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+            </div>
+
+            <div className="space-y-1">
               <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className={`w-full pl-10 pr-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-950 border transition-all ${
+                  className={`w-full pl-10 pr-10 py-3 rounded-lg bg-slate-50 dark:bg-slate-950 border transition-all ${
                     errors.password ? 'border-red-500 focus:ring-red-500' : 'border-slate-200 dark:border-slate-800 focus:ring-indigo-500'
                   } focus:outline-none focus:ring-2 text-slate-900 dark:text-white`}
                   placeholder="••••••••"
                 />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
               {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
             </div>
@@ -187,14 +211,17 @@ export default function SignUp() {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input
-                  type="password"
+                  type={showConfirmPassword ? 'text' : 'password'}
                   value={formData.confirmPassword}
                   onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                  className={`w-full pl-10 pr-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-950 border transition-all ${
+                  className={`w-full pl-10 pr-10 py-3 rounded-lg bg-slate-50 dark:bg-slate-950 border transition-all ${
                     errors.confirmPassword ? 'border-red-500 focus:ring-red-500' : 'border-slate-200 dark:border-slate-800 focus:ring-indigo-500'
                   } focus:outline-none focus:ring-2 text-slate-900 dark:text-white`}
                   placeholder="••••••••"
                 />
+                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
               {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
             </div>

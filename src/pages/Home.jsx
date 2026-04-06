@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MapPin, Wrench, Zap, Briefcase, ShoppingBag, HeartPulse, ChevronRight, Star, LocateFixed, Truck, MessageSquare, LayoutDashboard } from 'lucide-react';
+import { Search, MapPin, Wrench, Zap, Briefcase, ShoppingBag, HeartPulse, ChevronRight, Star, LocateFixed, Truck, MessageSquare, LayoutDashboard, ChefHat, Bug, Sparkles, Hammer } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { generateMockServices, getCategoryCounts } from '../data/mockServices';
 import { getTestimonials } from '../data/mockTestimonials';
 import { useAuth } from '../context/AuthContext';
 
-const mockServices = generateMockServices(100);
+const mockServices = generateMockServices(180);
 const counts = getCategoryCounts(mockServices);
 
 const categories = [
@@ -14,7 +14,11 @@ const categories = [
   { id: 'electricians', name: 'Electricians', icon: Zap, color: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-200 dark:border-yellow-900', count: `${counts['Electricians']}+` },
   { id: 'grocery', name: 'Grocery Stores', icon: ShoppingBag, color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900', count: `${counts['Grocery']}+` },
   { id: 'hospitals', name: 'Hospitals', icon: HeartPulse, color: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900', count: `${counts['Hospitals']}+` },
-  { id: 'courier', name: 'Courier Services', icon: Truck, color: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900', count: `${counts['Courier']}+` }
+  { id: 'courier', name: 'Courier Services', icon: Truck, color: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900', count: `${counts['Courier']}+` },
+  { id: 'cooks', name: 'Cooks & Catering', icon: ChefHat, color: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900', count: `${counts['Cooks & Catering']}+` },
+  { id: 'pestcontrol', name: 'Pest Control', icon: Bug, color: 'bg-lime-500/10 text-lime-600 dark:text-lime-400 border-lime-200 dark:border-lime-900', count: `${counts['Pest Control']}+` },
+  { id: 'cleaning', name: 'Cleaning Services', icon: Sparkles, color: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-200 dark:border-cyan-900', count: `${counts['Cleaning Services']}+` },
+  { id: 'carpenters', name: 'Carpenters', icon: Hammer, color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900', count: `${counts['Carpenters']}+` },
 ];
 
 const featuredServices = mockServices.slice(0, 6).map((service, idx) => ({
@@ -268,7 +272,7 @@ export default function Home() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
           {categories.map((category, idx) => {
             const Icon = category.icon;
             return (

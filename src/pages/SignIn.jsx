@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, AlertCircle, Loader } from 'lucide-react';
+import { Mail, Lock, AlertCircle, Loader, Phone, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { auth, googleProvider } from '../lib/firebase';
 import { signInWithPopup } from 'firebase/auth';
@@ -9,15 +9,22 @@ import { signInWithPopup } from 'firebase/auth';
 export default function SignIn() {
   const navigate = useNavigate();
   const { login, error: authError } = useAuth();
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [loginMode, setLoginMode] = useState('email'); // 'email' | 'phone'
+  const [formData, setFormData] = useState({ email: '', phone: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.email) newErrors.email = 'Email is required';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Invalid email';
+    if (loginMode === 'email') {
+      if (!formData.email) newErrors.email = 'Email is required';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Invalid email';
+    } else {
+      if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
+      else if (!/^[6-9]\d{9}$/.test(formData.phone.trim())) newErrors.phone = 'Enter a valid 10-digit Indian mobile number';
+    }
     if (!formData.password) newErrors.password = 'Password is required';
     if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
     setErrors(newErrors);
@@ -33,7 +40,9 @@ export default function SignIn() {
       await login(formData.email, formData.password);
       navigate('/');
     } catch (err) {
-      setErrors({ submit: err.message });
+      let msg = err.message;
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') msg = 'Invalid credentials. Please try again.';
+      setErrors({ submit: msg });
     } finally {
       setLoading(false);
     }
@@ -73,37 +82,82 @@ export default function SignIn() {
             </div>
           )}
 
+          {/* Toggle */}
+          <div className="flex rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden mb-6">
+            <button
+              type="button"
+              onClick={() => { setLoginMode('email'); setErrors({}); }}
+              className={`flex-1 py-2 text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${
+                loginMode === 'email' ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+              }`}
+            >
+              <Mail size={15} /> Email
+            </button>
+            <button
+              type="button"
+              onClick={() => { setLoginMode('phone'); setErrors({}); }}
+              className={`flex-1 py-2 text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${
+                loginMode === 'phone' ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+              }`}
+            >
+              <Phone size={15} /> Mobile
+            </button>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1">
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Email Address</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className={`w-full pl-10 pr-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-950 border transition-all ${
-                    errors.email ? 'border-red-500 focus:ring-red-500' : 'border-slate-200 dark:border-slate-800 focus:ring-indigo-500'
-                  } focus:outline-none focus:ring-2 text-slate-900 dark:text-white`}
-                  placeholder="you@example.com"
-                />
+            {loginMode === 'email' ? (
+              <div className="space-y-1">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className={`w-full pl-10 pr-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-950 border transition-all ${
+                      errors.email ? 'border-red-500 focus:ring-red-500' : 'border-slate-200 dark:border-slate-800 focus:ring-indigo-500'
+                    } focus:outline-none focus:ring-2 text-slate-900 dark:text-white`}
+                    placeholder="you@example.com"
+                  />
+                </div>
+                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
               </div>
-              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
-            </div>
+            ) : (
+              <div className="space-y-1">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Mobile Number</label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                    className={`w-full pl-10 pr-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-950 border transition-all ${
+                      errors.phone ? 'border-red-500 focus:ring-red-500' : 'border-slate-200 dark:border-slate-800 focus:ring-indigo-500'
+                    } focus:outline-none focus:ring-2 text-slate-900 dark:text-white`}
+                    placeholder="10-digit mobile number"
+                  />
+                </div>
+                {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+                <p className="text-xs text-slate-400 mt-1">Use the mobile number linked to your account email</p>
+              </div>
+            )}
 
             <div className="space-y-1">
               <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className={`w-full pl-10 pr-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-950 border transition-all ${
+                  className={`w-full pl-10 pr-10 py-3 rounded-lg bg-slate-50 dark:bg-slate-950 border transition-all ${
                     errors.password ? 'border-red-500 focus:ring-red-500' : 'border-slate-200 dark:border-slate-800 focus:ring-indigo-500'
                   } focus:outline-none focus:ring-2 text-slate-900 dark:text-white`}
                   placeholder="••••••••"
                 />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
               {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
             </div>

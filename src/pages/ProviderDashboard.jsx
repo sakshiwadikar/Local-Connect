@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { BarChart3, Star, Eye, ListChecks, TrendingUp, MessageSquare, Trash2, Edit2, X, Database } from 'lucide-react';
+import { BarChart3, Star, Eye, ListChecks, TrendingUp, MessageSquare, Trash2, Edit2, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useProviderServices } from '../hooks/useProviderServices';
 import { getServiceReviews, getAverageRating } from '../data/mockReviews';
-import { seedProviderServices } from '../utils/seedData';
 import EmptyState from '../components/EmptyState';
 
 export default function ProviderDashboard() {
@@ -15,31 +14,13 @@ export default function ProviderDashboard() {
   const [editingService, setEditingService] = useState(null);
   const [deletingServiceId, setDeletingServiceId] = useState(null);
   const [editFormData, setEditFormData] = useState({});
-  const [isSeeding, setIsSeeding] = useState(false);
-  const [seedMessage, setSeedMessage] = useState('');
+
 
   useEffect(() => {
     if (user?.uid) {
       fetchServices();
     }
   }, [user?.uid, fetchServices]);
-
-  const handleSeedData = async () => {
-    try {
-      setIsSeeding(true);
-      setSeedMessage('');
-      const count = await seedProviderServices();
-      setSeedMessage(`✅ Successfully seeded ${count} services!`);
-      setTimeout(() => {
-        fetchServices();
-        setSeedMessage('');
-      }, 2000);
-    } catch (err) {
-      setSeedMessage(`❌ Error: ${err.message}`);
-    } finally {
-      setIsSeeding(false);
-    }
-  };
 
   if (!user) {
     return (
@@ -135,31 +116,10 @@ export default function ProviderDashboard() {
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Provider Dashboard</h1>
           <p className="text-slate-600 dark:text-slate-400">Welcome back, {user.displayName || user.email}</p>
         </div>
-        <button
-          onClick={handleSeedData}
-          disabled={isSeeding}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-600 hover:bg-slate-700 disabled:bg-slate-400 text-white font-semibold rounded-lg transition-all"
-        >
-          <Database size={18} />
-          {isSeeding ? 'Seeding...' : 'Seed Demo Data'}
-        </button>
+
       </div>
 
-      {/* Seed Message */}
-      {seedMessage && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          className={`p-4 rounded-lg ${
-            seedMessage.includes('✅')
-              ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-300 dark:border-green-700'
-              : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-300 dark:border-red-700'
-          }`}
-        >
-          {seedMessage}
-        </motion.div>
-      )}
+
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

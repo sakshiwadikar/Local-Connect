@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate, Navigate } from 'react-router-dom';
 import { Star, MapPin, CheckCircle, Clock, Phone, Mail, Calendar, Info, Shield, MessageCircle, Heart } from 'lucide-react';
 import { generateMockServices } from '../data/mockServices';
 import { getServiceReviews, getAverageRating } from '../data/mockReviews';
@@ -15,6 +15,7 @@ const allServices = generateMockServices(100);
 
 export default function ServiceDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { isFavorited, toggleFavorite } = useFavorites();
   const toast = useToast();
@@ -50,6 +51,9 @@ export default function ServiceDetail() {
 
   const averageRating = parseFloat(getAverageRating(parseInt(id)));
   const topReviews = reviews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 3);
+
+  // Redirect to signin if not logged in
+  if (!user) return <Navigate to="/signin" replace />;
 
   const handleReviewSubmit = async (reviewData) => {
     setReviewLoading(true);
@@ -195,7 +199,16 @@ export default function ServiceDetail() {
             </div>
 
             {/* Review Form */}
-            <ReviewForm serviceId={parseInt(id)} onSubmit={handleReviewSubmit} isLoading={reviewLoading} />
+            {user ? (
+              <ReviewForm serviceId={parseInt(id)} onSubmit={handleReviewSubmit} isLoading={reviewLoading} />
+            ) : (
+              <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-center">
+                <p className="text-slate-600 dark:text-slate-400 mb-3">You must be signed in to post a review.</p>
+                <button onClick={() => navigate('/signin')} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors">
+                  Sign In to Review
+                </button>
+              </div>
+            )}
 
             {/* Reviews List */}
             {reviews.length > 0 ? (
