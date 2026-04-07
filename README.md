@@ -291,10 +291,9 @@ MIT License - feel free to use this project for learning and development.
 
 ---
 
-## 👤 Author
+## 👤 Authors
 
-**Mangesh Alange**
-- GitHub: [@Mangesh-Alange](https://github.com/Mangesh-Alange)
+**Mangesh Alange** **Aayushi Dhawas** **Sakshi Wadikar** **Poorva Bhirud**
 - Project: [Local-Connect](https://github.com/Mangesh-Alange/Local-Connect)
 
 ---
