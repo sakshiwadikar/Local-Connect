@@ -67,25 +67,19 @@ def get_demand_trends(area=None, category=None):
     grouped = df.groupby(['month_num', 'month']).size().reset_index(name='demand')
     grouped = grouped.sort_values('month_num')
 
-    # Ensure all 12 months are present
-    all_months = pd.DataFrame({
-        'month_num': range(1, 13),
-        'month': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-    })
-    grouped = all_months.merge(grouped, on=['month_num', 'month'], how='left').fillna(0)
-    grouped['demand'] = grouped['demand'].astype(int)
+    prov = providers_df.copy()
+    if area and area != 'All' and area != 'All India':
+        prov = prov[prov['area'] == area]
+    if category and category != 'All':
+        prov = prov[prov['category'] == category]
+    supply_count = len(prov)
 
-    # Calculate supply as percentage of demand (add some variation)
     result = []
     for _, row in grouped.iterrows():
-        demand_val = int(row['demand'])
-        # Supply is 60-80% of demand with some randomness
-        base_supply = int(demand_val * random.uniform(0.6, 0.8))
-        supply_val = max(0, base_supply + random.randint(-demand_val//10, demand_val//10))
         result.append({
             'name': row['month'],
-            'demand': demand_val,
-            'supply': supply_val
+            'demand': int(row['demand']),
+            'supply': max(1, supply_count + random.randint(-2, 2))
         })
     return result
 
