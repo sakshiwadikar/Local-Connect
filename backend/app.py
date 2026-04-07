@@ -74,6 +74,7 @@ def price_insights():
 
 @app.route('/api/predictions')
 def predictions():
+    # Returns ML-based service demand forecasts with descriptive text format
     return jsonify(get_predictions(area_param()))
 
 
