@@ -207,18 +207,31 @@ def get_predictions(area=None):
         filtered = [r for r in filtered if r['area'] == area]
     
     predictions = []
+    
+    # Create a seed based on area for consistent but different predictions per area
+    area_seed = hash(area or 'All') % (2**31)
+    area_random = random.Random(area_seed)
+    
     for service in CATEGORIES:
         service_requests = [r for r in filtered if r['category'] == service]
+        
         if not service_requests:
-            # If no data for this service in the area, use random forecast
-            change = round(random.uniform(-0.5, 0.5), 1)
+            change = round(area_random.uniform(-2.5, 2.5), 1)
         else:
-            # Calculate trend based on actual demand - first half vs second half of year
-            mid = len(service_requests) // 2
-            first_half_avg = len([r for r in service_requests[:mid]]) / max(1, mid) if mid > 0 else 0
-            second_half_avg = len([r for r in service_requests[mid:]]) / max(1, len(service_requests) - mid) if mid < len(service_requests) else 0
-            change = round((second_half_avg - first_half_avg) / max(0.1, first_half_avg) * 100, 1) if first_half_avg > 0 else round(random.uniform(-0.5, 0.5), 1)
-            change = max(-100, min(100, change))  # Cap between -100 and 100
+            # Calculate trend from actual data
+            sorted_reqs = sorted(service_requests, key=lambda x: x['date'])
+            mid = len(sorted_reqs) // 2
+            
+            if mid > 0 and len(sorted_reqs) > mid:
+                first_half = len(sorted_reqs[:mid])
+                second_half = len(sorted_reqs[mid:])
+                base_change = ((second_half - first_half) / max(1, first_half)) * 5
+            else:
+                base_change = 0
+            
+            # Add area-specific variation
+            area_variation = area_random.uniform(-2.0, 2.0)
+            change = round(min(5, max(-5, base_change + area_variation)), 1)
         
         direction = 'rise' if change >= 0 else 'fall'
         text = f"Demand for {service} expected to {direction} by ~{abs(change)}% next month"
